@@ -277,7 +277,9 @@ export default function App() {
   // Universal Save or Share helper (iPad Share Sheet -> Save to Files, Desktop File Picker, or Download)
   const saveOrShareFile = async (filename: string, content: string, title?: string) => {
     const blob = new Blob([content], { type: 'application/json' });
-    const file = new File([blob], filename, { type: 'application/json' });
+    // Note: iOS Safari WebKit only permits 'text/plain' (not 'application/json') in navigator.canShare
+    // The filename still retains .json, so iOS Files app correctly treats it as a JSON document
+    const file = new File([blob], filename, { type: 'text/plain' });
 
     // 1. Try native Web Share API with files (iPadOS, iOS, macOS Safari)
     if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
