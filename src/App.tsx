@@ -98,154 +98,123 @@ export default function App() {
     }
   }, [activeMapId, resetHistory]);
 
-  // Update map characters & relationships helper
-  const updateActiveMapData = useCallback(
-    (
-      newCharacters: Character[],
-      newRelationships: Relationship[],
-      actionDescription?: string
-    ) => {
-      // Record for undo/redo
-      recordAction(newCharacters, newRelationships, actionDescription);
-
-      setMaps(prevMaps =>
-        prevMaps.map(m => {
-          if (m.id === activeMapId) {
-            return {
-              ...m,
-              characters: newCharacters,
-              relationships: newRelationships,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return m;
-        })
-      );
-    },
-    [activeMapId, recordAction]
-  );
-
-  // Undo execution handler
-  const handleUndo = useCallback(() => {
-    undo((restoredCharacters, restoredRelationships) => {
-      setMaps(prevMaps =>
-        prevMaps.map(m => {
-          if (m.id === activeMapId) {
-            return {
-              ...m,
-              characters: restoredCharacters,
-              relationships: restoredRelationships,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return m;
-        })
-      );
-    });
-  }, [undo, activeMapId]);
-
-  // Redo execution handler
-  const handleRedo = useCallback(() => {
-    redo((restoredCharacters, restoredRelationships) => {
-      setMaps(prevMaps =>
-        prevMaps.map(m => {
-          if (m.id === activeMapId) {
-            return {
-              ...m,
-              characters: restoredCharacters,
-              relationships: restoredRelationships,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return m;
-        })
-      );
-    });
-  }, [redo, activeMapId]);
-
-  // Global Keyboard Shortcuts (Ctrl+Z / Cmd+Z for undo, Ctrl+Shift+Z / Cmd+Shift+Z / Ctrl+Y for redo)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if typing in an input or textarea
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
-
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
-
-      if (cmdOrCtrl && !e.altKey) {
-        if (e.key === 'z' || e.key === 'Z') {
-          e.preventDefault();
-          if (e.shiftKey) {
-            handleRedo();
-          } else {
-            handleUndo();
-          }
-        } else if (!isMac && (e.key === 'y' || e.key === 'Y')) {
-          e.preventDefault();
-          handleRedo();
-        }
-      } else if (e.key === 'Escape') {
-        setSelectedCharacterId(null);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, handleRedo]);
-
-  // Switch Map
-  const handleSelectMap = (id: string) => {
-    setActiveMapId(id);
+  // Handle switching map
+  const handleSelectMap = (mapId: string) => {
+    setActiveMapId(mapId);
     setSelectedCharacterId(null);
     setSearchQuery('');
+    setActiveFilterType(null);
   };
 
-  // Create New Map
-  const handleCreateNewMap = (newMap: LiteraryMap) => {
+  // Handle creating a new literary map
+  const handleCreateMap = (newMap: LiteraryMap) => {
     setMaps(prev => [...prev, newMap]);
     setActiveMapId(newMap.id);
+    setSelectedCharacterId(newMap.characters[0]?.id || null);
+    setIsNewMapModalOpen(false);
   };
 
-  // Delete Current Map
+  // Handle deleting the current literary map
   const handleDeleteCurrentMap = () => {
     if (maps.length <= 1) return;
     const confirmDelete = window.confirm(
-      `Are you sure you want to delete the map "${activeMap.title}"?`
+      `Are you sure you want to delete "${activeMap.title}"? This cannot be undone.`
     );
     if (!confirmDelete) return;
 
-    const remaining = maps.filter(m => m.id !== activeMapId);
-    setMaps(remaining);
-    setActiveMapId(remaining[0].id);
+    const remainingMaps = maps.filter(m => m.id !== activeMap.id);
+    setMaps(remainingMaps);
+    setActiveMapId(remainingMaps[0].id);
+    setSelectedCharacterId(remainingMaps[0].characters[0]?.id || null);
   };
 
+  // Helper to update active map with history recording
+  const updateActiveMapData = (
+    nextCharacters: Character[],
+    nextRelationships: Relationship[],
+    actionDescription: string
+  ) => {
+    recordAction(actionDescription);
+    const updatedMap: LiteraryMap = {
+      ...activeMap,
+      characters: nextCharacters,
+      relationships: nextRelationships,
+      updatedAt: new Date().toISOString(),
+    };
+    setMaps(prev => prev.map(m => (m.id === activeMap.id ? updatedMap : m)));
+  };
+
+  // Undo / Redo Trigger Handlers
+  const handleUndo = () => {
+    const previousState = undo();
+    if (previousState) {
+      const restoredMap: LiteraryMap = {
+        ...activeMap,
+        characters: previousState.characters,
+        relationships: previousState.relationships,
+        updatedAt: new Date().toISOString(),
+      };
+      setMaps(prev => prev.map(m => (m.id === activeMap.id ? restoredMap : m)));
+    }
+  };
+
+  const handleRedo = () => {
+    const nextState = redo();
+    if (nextState) {
+      const restoredMap: LiteraryMap = {
+        ...activeMap,
+        characters: nextState.characters,
+        relationships: nextState.relationships,
+        updatedAt: new Date().toISOString(),
+      };
+      setMaps(prev => prev.map(m => (m.id === activeMap.id ? restoredMap : m)));
+    }
+  };
+
+  // Character Node Drag / Position Change Handler
+  const handleCharacterPositionChange = useCallback(
+    (charId: string, x: number, y: number) => {
+      setMaps(prev =>
+        prev.map(m => {
+          if (m.id !== activeMapId) return m;
+          return {
+            ...m,
+            characters: m.characters.map(c => {
+              if (c.id === charId) {
+                return { ...c, coordinates: { x, y } };
+              }
+              return c;
+            }),
+          };
+        })
+      );
+    },
+    [activeMapId]
+  );
+
   // Character Add / Edit Handlers
-  const handleSaveCharacter = (savedCharacter: Character) => {
-    const existingIndex = activeMap.characters.findIndex(c => c.id === savedCharacter.id);
+  const handleSaveCharacter = (savedChar: Character) => {
+    const existingIndex = activeMap.characters.findIndex(c => c.id === savedChar.id);
     let nextCharacters: Character[];
     let description: string;
 
     if (existingIndex >= 0) {
       nextCharacters = activeMap.characters.map(c =>
-        c.id === savedCharacter.id ? savedCharacter : c
+        c.id === savedChar.id ? savedChar : c
       );
-      description = `Edited character '${savedCharacter.displayName}'`;
+      description = `Updated ${savedChar.displayName}`;
     } else {
-      nextCharacters = [...activeMap.characters, savedCharacter];
-      description = `Added character '${savedCharacter.displayName}'`;
+      nextCharacters = [...activeMap.characters, savedChar];
+      description = `Added ${savedChar.displayName}`;
     }
 
     updateActiveMapData(nextCharacters, activeMap.relationships, description);
-    setSelectedCharacterId(savedCharacter.id);
+    setSelectedCharacterId(savedChar.id);
   };
 
   const handleDeleteCharacter = (charId: string) => {
     const char = activeMap.characters.find(c => c.id === charId);
     const nextCharacters = activeMap.characters.filter(c => c.id !== charId);
-    // Also remove any relationships attached to this character
     const nextRelationships = activeMap.relationships.filter(
       r => r.sourceId !== charId && r.targetId !== charId
     );
@@ -303,6 +272,91 @@ export default function App() {
       setMaps(prev => [...prev, importedMap]);
       setActiveMapId(importedMap.id);
     }
+  };
+
+  // Universal Save or Share helper (iPad Share Sheet -> Save to Files, Desktop File Picker, or Download)
+  const saveOrShareFile = async (filename: string, content: string, title?: string) => {
+    const blob = new Blob([content], { type: 'application/json' });
+    const file = new File([blob], filename, { type: 'application/json' });
+
+    // 1. Try native Web Share API with files (iPadOS, iOS, macOS Safari)
+    if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: title || filename,
+        });
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          // User closed share sheet without saving; do not trigger download
+          return;
+        }
+        console.warn('Share sheet was dismissed, attempting fallback', err);
+      }
+    }
+
+    // 2. Try File System Access API (Desktop Chrome / Edge / Opera / Mac Safari)
+    if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'JSON Backup',
+              accept: { 'application/json': ['.json'] },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return;
+        }
+        console.warn('File picker cancelled, falling back to download', err);
+      }
+    }
+
+    // 3. Fallback to standard browser download
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', url);
+    downloadAnchor.setAttribute('download', filename);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // Direct Save to Files / iCloud (All Books Library)
+  // Uses consistent name 'foliograph_all_books.json' so iPadOS / Mac asks to Replace/Overwrite!
+  const handleSaveToFilesAll = async () => {
+    const backupData = {
+      app: 'FolioGraph',
+      version: '2.0',
+      exportDate: new Date().toISOString(),
+      totalMaps: maps.length,
+      activeMapId: activeMap.id,
+      maps: maps,
+    };
+    await saveOrShareFile(
+      'foliograph_all_books.json',
+      JSON.stringify(backupData, null, 2),
+      'FolioGraph All Books Library'
+    );
+  };
+
+  // Direct Save to Files / iCloud (Current Book)
+  const handleSaveToFilesCurrent = async () => {
+    const filename = `${activeMap.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_foliograph.json`;
+    await saveOrShareFile(
+      filename,
+      JSON.stringify(activeMap, null, 2),
+      activeMap.title
+    );
   };
 
   // Export JSON Handler (Single Current Book)
@@ -428,6 +482,8 @@ export default function App() {
         onOpenImportModal={() => setIsImportModalOpen(true)}
         onExportJson={handleExportJson}
         onExportAllJson={handleExportAllJson}
+        onSaveToFilesAll={handleSaveToFilesAll}
+        onSaveToFilesCurrent={handleSaveToFilesCurrent}
         onExportHtml={handleExportHtml}
         onOpenAddCharacter={() => setEditingCharacter(null)}
         isDarkMode={isDarkMode}
@@ -458,91 +514,116 @@ export default function App() {
               );
             }}
             layoutMode={layoutMode}
+            onCharacterPositionChange={handleCharacterPositionChange}
+            onAddCharacterAt={() => setEditingCharacter(null)}
+            onConnectCharacters={(sourceId, targetId) => {
+              setRelationshipDefaultSourceId(sourceId);
+              setEditingRelationship(null);
+            }}
+            filterCategory={activeFilterType}
             isDarkMode={isDarkMode}
-            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            activeFilterType={activeFilterType}
-            onFilterTypeToggle={setActiveFilterType}
             coverImageUrl={activeMap.coverImageUrl}
-            bookTitle={activeMap.title}
             onUpdateCoverImage={handleUpdateCoverImage}
           />
         </div>
 
-        {/* Right Side Panel (~30%) */}
+        {/* Right Detail Inspector Panel (~30%) */}
         <SidePanel
           activeMap={activeMap}
-          selectedCharacter={selectedCharacter}
+          character={selectedCharacter}
+          allCharacters={activeMap.characters}
+          relationships={activeMap.relationships}
           onSelectCharacter={id => setSelectedCharacterId(id)}
-          onOpenCharacterBreakdown={char => setBreakdownCharacter(char)}
-          onOpenAddRelationship={sourceId => {
+          onEditCharacter={char => setEditingCharacter(char)}
+          onDeleteCharacter={handleDeleteCharacter}
+          onEditRelationship={rel => setEditingRelationship(rel)}
+          onDeleteRelationship={handleDeleteRelationship}
+          onAddRelationship={sourceId => {
             setRelationshipDefaultSourceId(sourceId);
             setEditingRelationship(null);
           }}
-          onEditRelationship={rel => setEditingRelationship(rel)}
-          onDeleteRelationship={handleDeleteRelationship}
-          onEditCharacter={char => setEditingCharacter(char)}
-          onDeleteCharacter={handleDeleteCharacter}
-          onOpenAddCharacter={() => setEditingCharacter(null)}
-          isDarkMode={isDarkMode}
+          onOpenBreakdown={char => setBreakdownCharacter(char)}
+          filterCategory={activeFilterType}
+          onFilterCategoryChange={setActiveFilterType}
           isCollapsed={isSidePanelCollapsed}
-          onToggleCollapse={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
+          onToggleCollapse={() => setIsSidePanelCollapsed(prev => !prev)}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+          onImportLibrary={handleImportLibrary}
+          onExportAllJson={handleExportAllJson}
+          totalMapsCount={maps.length}
+          coverImageUrl={activeMap.coverImageUrl}
+          onUpdateCoverImage={handleUpdateCoverImage}
         />
       </main>
 
-      {/* Character Breakdown Modal (Literary Reading Guide from screenshot) */}
+      {/* Floating / Dialog Modals */}
       {breakdownCharacter && (
         <CharacterBreakdownModal
           character={breakdownCharacter}
-          activeMap={activeMap}
+          relationships={activeMap.relationships}
+          allCharacters={activeMap.characters}
           onClose={() => setBreakdownCharacter(null)}
-          onSelectConnectedCharacter={id => {
+          onSelectCharacter={id => {
             setSelectedCharacterId(id);
+            const found = activeMap.characters.find(c => c.id === id);
+            if (found) setBreakdownCharacter(found);
           }}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {/* Character Add / Edit Modal */}
       {editingCharacter !== undefined && (
         <CharacterEditModal
-          initialCharacter={editingCharacter}
+          character={editingCharacter}
           onClose={() => setEditingCharacter(undefined)}
-          onSave={handleSaveCharacter}
+          onSave={char => {
+            handleSaveCharacter(char);
+            setEditingCharacter(undefined);
+          }}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {/* Relationship Add / Edit Modal */}
       {editingRelationship !== undefined && (
         <RelationshipModal
-          initialRelationship={editingRelationship}
+          relationship={editingRelationship}
           characters={activeMap.characters}
           defaultSourceId={relationshipDefaultSourceId}
           onClose={() => {
             setEditingRelationship(undefined);
             setRelationshipDefaultSourceId(undefined);
           }}
-          onSave={handleSaveRelationship}
+          onSave={rel => {
+            handleSaveRelationship(rel);
+            setEditingRelationship(undefined);
+            setRelationshipDefaultSourceId(undefined);
+          }}
+          onDelete={id => {
+            handleDeleteRelationship(id);
+            setEditingRelationship(undefined);
+            setRelationshipDefaultSourceId(undefined);
+          }}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {/* JSON Import Modal */}
       {isImportModalOpen && (
         <JsonImportModal
+          currentMapTitle={activeMap.title}
           onClose={() => setIsImportModalOpen(false)}
-          onImport={handleImportMap}
-          onImportLibrary={handleImportLibrary}
-          activeMapTitle={activeMap.title}
+          onImport={(importedMap, overwrite) => {
+            handleImportMap(importedMap, overwrite);
+            setIsImportModalOpen(false);
+          }}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {/* New Map Modal */}
       {isNewMapModalOpen && (
         <NewMapModal
           onClose={() => setIsNewMapModalOpen(false)}
-          onCreate={handleCreateNewMap}
+          onCreate={handleCreateMap}
           isDarkMode={isDarkMode}
         />
       )}
