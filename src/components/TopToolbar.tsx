@@ -14,6 +14,7 @@ import {
   Trash2,
   Undo2,
   Redo2,
+  FolderSync,
 } from 'lucide-react';
 import { LiteraryMap, LayoutMode } from '../types';
 
@@ -32,6 +33,8 @@ interface TopToolbarProps {
   onOpenImportModal: () => void;
   onExportJson: () => void;
   onExportAllJson: () => void;
+  onSaveToFilesAll: () => void;
+  onSaveToFilesCurrent: () => void;
   onExportHtml: () => void;
   onOpenAddCharacter: () => void;
   isDarkMode: boolean;
@@ -56,6 +59,8 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
   onOpenImportModal,
   onExportJson,
   onExportAllJson,
+  onSaveToFilesAll,
+  onSaveToFilesCurrent,
   onExportHtml,
   onOpenAddCharacter,
   isDarkMode,
@@ -122,7 +127,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           )}
         </div>
 
-        {/* Character & Relationship Counter (as seen in user screenshot!) */}
+        {/* Character & Relationship Counter */}
         <div className="hidden lg:flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
           <span className="font-bold text-slate-700 dark:text-slate-200 tabular-nums">
             {activeMap.characters.length}
@@ -250,7 +255,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
           </button>
         </div>
 
-        {/* Clear selection button if character selected (matching top-right button in screenshot!) */}
+        {/* Clear selection button */}
         {selectedCharacterId && (
           <button
             onClick={onClearSelection}
@@ -292,7 +297,7 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
-            title="Export Map"
+            title="Export / Save Map"
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
               isDarkMode
                 ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
@@ -305,18 +310,75 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
 
           {showExportMenu && (
             <div
-              className={`absolute right-0 mt-1.5 w-60 rounded-xl border shadow-xl py-1.5 z-40 ${
+              className={`absolute right-0 mt-1.5 w-72 rounded-xl border shadow-xl py-2 z-40 ${
                 isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
               }`}
               onClick={() => setShowExportMenu(false)}
             >
+              {/* Direct Save to Files / iCloud (Share Sheet) */}
+              <div className="px-3.5 py-1 text-[10px] font-bold tracking-wider uppercase text-violet-600 dark:text-violet-400">
+                Save to Files / iCloud (Share Sheet)
+              </div>
+
+              <button
+                onClick={onSaveToFilesAll}
+                className="w-full text-left px-3.5 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-950/60 flex items-center justify-center shrink-0">
+                  <Share2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">Save All Books to Files</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Direct to iCloud Drive folder (overwrites clean)
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={onSaveToFilesCurrent}
+                className="w-full text-left px-3.5 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-950/60 flex items-center justify-center shrink-0">
+                  <Share2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">Save Current Book to Files</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Saves "{activeMap.title}" to iCloud folder
+                  </div>
+                </div>
+              </button>
+
+              {/* Standard Downloads */}
+              <div className="mt-1 pt-1.5 border-t border-slate-100 dark:border-slate-800 px-3.5 py-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
+                Standard Downloads
+              </div>
+
+              <button
+                onClick={onExportAllJson}
+                className="w-full text-left px-3.5 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
+                  <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">Download All Books (JSON)</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Downloads backup file ({maps.length} books)
+                  </div>
+                </div>
+              </button>
+
               <button
                 onClick={onExportJson}
-                className="w-full text-left px-3.5 py-2.5 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full text-left px-3.5 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <Download className="w-4 h-4 text-violet-500 shrink-0" />
+                <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                  <Download className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                </div>
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white">Export Current Book (JSON)</div>
+                  <div className="font-bold text-slate-900 dark:text-white">Download Current Book (JSON)</div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400">
                     Saves "{activeMap.title}" only
                   </div>
@@ -324,23 +386,12 @@ export const TopToolbar: React.FC<TopToolbarProps> = ({
               </button>
 
               <button
-                onClick={onExportAllJson}
-                className="w-full text-left px-3.5 py-2.5 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-t border-slate-100 dark:border-slate-800"
-              >
-                <Layers className="w-4 h-4 text-indigo-500 shrink-0" />
-                <div>
-                  <div className="font-bold text-slate-900 dark:text-white">Export All Books / Library (JSON)</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                    Saves all {maps.length} books in one file
-                  </div>
-                </div>
-              </button>
-
-              <button
                 onClick={onExportHtml}
-                className="w-full text-left px-3.5 py-2.5 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-t border-slate-100 dark:border-slate-800"
+                className="w-full text-left px-3.5 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-t border-slate-100 dark:border-slate-800"
               >
-                <Share2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
                 <div>
                   <div className="font-bold text-slate-900 dark:text-white">Export Single-File HTML</div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400">Offline interactive web file</div>
