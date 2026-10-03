@@ -1,0 +1,6 @@
+{
+  "name": "FolioGraph - Literary Character & Relationship Map",
+  "description": "Interactive literary character relationship web and reader guide. Visualize character webs, concentric focus diagrams, and track connections across classic novels.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
