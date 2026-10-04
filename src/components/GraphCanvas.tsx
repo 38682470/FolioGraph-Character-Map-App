@@ -9,7 +9,7 @@ import {
   GraphLink,
   LayoutMode,
 } from '../types';
-import { getCharacterAvatar } from '../data/avatarPresets';
+import { getCharacterAvatar, COLOR_CIRCLE_PRESETS } from '../data/avatarPresets';
 import { ZoomIn, ZoomOut, RotateCcw, Moon, Sun, Play, Pause, Compass, BookOpen, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 
 interface GraphCanvasProps {
@@ -121,264 +121,250 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     return ids;
   }, [selectedCharacterId, relationships]);
 
-  // Dynamic font size calculator for node names
-  const getLabelFontSize = useCallback((name: string, tier: string) => {
-    const len = name.length;
-    const base = tier === 'lead' ? 13 : tier === 'supporting' ? 11 : 10;
-    if (len > 18) return `${Math.max(8, base - 3)}px`;
-    if (len > 12) return `${Math.max(9, base - 1.5)}px`;
-    return `${base}px`;
-  }, []);
-
-  // Node radius based on tier
-  const getNodeRadius = useCallback((tier: string) => {
-    switch (tier) {
-      case 'lead':
-        return 34;
-      case 'supporting':
-        return 26;
-      case 'minor':
-      default:
-        return 20;
-    }
-  }, []);
-
-  // Prepare nodes and links with concentric ring calculations
-  const { graphNodes, graphLinks } = useMemo(() => {
-    // Degree counter
-    const degreeMap = new Map<string, number>();
-    relationships.forEach(r => {
-      degreeMap.set(r.sourceId, (degreeMap.get(r.sourceId) || 0) + 1);
-      degreeMap.set(r.targetId, (degreeMap.get(r.targetId) || 0) + 1);
-    });
-
-    const nodes: GraphNode[] = characters.map(c => {
-      const prevPos = nodePositionsRef.current.get(c.id);
-      const radius = getNodeRadius(c.tier);
-      const degree = degreeMap.get(c.id) || 0;
-
-      let concentricRing = 3;
-      if (selectedCharacterId) {
-        if (c.id === selectedCharacterId) {
-          concentricRing = 0;
-        } else {
-          const directRel = relationships.find(
-            r =>
-              (r.sourceId === selectedCharacterId && r.targetId === c.id) ||
-              (r.targetId === selectedCharacterId && r.sourceId === c.id)
-          );
-          if (directRel) {
-            concentricRing = directRel.tier === 'primary' ? 1 : 2;
-          }
-        }
-      }
+  // Prepare Nodes with Radius & Visual Hierarchy matching StageAgent reference
+  const graphNodes = useMemo<GraphNode[]>(() => {
+    return characters.map(c => {
+      const isLead = c.tier === 'lead';
+      const isSupporting = c.tier === 'supporting';
+      const radius = isLead ? 36 : isSupporting ? 28 : 22;
+      const savedPos = nodePositionsRef.current.get(c.id);
 
       return {
         ...c,
         radius,
-        degree,
-        concentricRing,
-        x: prevPos ? prevPos.x : (Math.random() - 0.5) * 400,
-        y: prevPos ? prevPos.y : (Math.random() - 0.5) * 400,
+        x: savedPos?.x ?? (c.x ?? 0),
+        y: savedPos?.y ?? (c.y ?? 0),
+        vx: 0,
+        vy: 0,
       };
     });
+  }, [characters]);
 
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
-
-    const links: GraphLink[] = relationships
+  // Prepare Links
+  const graphLinks = useMemo<GraphLink[]>(() => {
+    const nodeMap = new Map(graphNodes.map(n => [n.id, n]));
+    return relationships
       .filter(r => nodeMap.has(r.sourceId) && nodeMap.has(r.targetId))
       .map(r => ({
         ...r,
         source: nodeMap.get(r.sourceId)!,
         target: nodeMap.get(r.targetId)!,
       }));
+  }, [relationships, graphNodes]);
 
-    return { graphNodes: nodes, graphLinks: links };
-  }, [characters, relationships, selectedCharacterId, getNodeRadius]);
+  // Concentric Radial Radii calculation
+  const concentricRadii = useMemo(() => {
+    return [
+      relationshipLength * 0.75,
+      relationshipLength * 1.5,
+      relationshipLength * 2.25,
+      relationshipLength * 3.0,
+    ];
+  }, [relationshipLength]);
 
-  // Setup Zoom & Pan
+  // Layout Placement Effect
   useEffect(() => {
-    if (!svgRef.current || !gRef.current) return;
-    const svg = d3.select(svgRef.current);
-    const g = d3.select(gRef.current);
+    if (graphNodes.length === 0) return;
 
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.15, 4])
-      .on('zoom', event => {
-        g.attr('transform', event.transform);
+    if (simulationRef.current) {
+      simulationRef.current.stop();
+    }
+
+    if (layoutMode === 'concentric') {
+      const centerNode = selectedCharacterId
+        ? graphNodes.find(n => n.id === selectedCharacterId) || graphNodes[0]
+        : graphNodes[0];
+
+      const immediateNeighbors: GraphNode[] = [];
+      const secondNeighbors: GraphNode[] = [];
+      const outerNodes: GraphNode[] = [];
+
+      const connectedToCenter = new Set<string>();
+      relationships.forEach(r => {
+        if (r.sourceId === centerNode.id) connectedToCenter.add(r.targetId);
+        if (r.targetId === centerNode.id) connectedToCenter.add(r.sourceId);
       });
 
-    zoomBehaviorRef.current = zoom;
-    svg.call(zoom);
+      graphNodes.forEach(node => {
+        if (node.id === centerNode.id) return;
+        if (connectedToCenter.has(node.id)) {
+          immediateNeighbors.push(node);
+        } else if (node.tier === 'supporting') {
+          secondNeighbors.push(node);
+        } else {
+          outerNodes.push(node);
+        }
+      });
+
+      centerNode.x = 0;
+      centerNode.y = 0;
+      nodePositionsRef.current.set(centerNode.id, { x: 0, y: 0 });
+
+      const placeRing = (nodes: GraphNode[], radius: number, offsetAngle: number = 0) => {
+        const step = (Math.PI * 2) / Math.max(nodes.length, 1);
+        nodes.forEach((n, i) => {
+          const angle = i * step + offsetAngle;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          n.x = x;
+          n.y = y;
+          nodePositionsRef.current.set(n.id, { x, y });
+        });
+      };
+
+      placeRing(immediateNeighbors, concentricRadii[0], -Math.PI / 2);
+      placeRing(secondNeighbors, concentricRadii[1], Math.PI / 6);
+      placeRing(outerNodes, concentricRadii[2], -Math.PI / 4);
+
+      nodeElsRef.current.forEach((el, id) => {
+        const pos = nodePositionsRef.current.get(id);
+        if (pos) el.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+      });
+
+      edgeElsRef.current.forEach((el, id) => {
+        const rel = relationships.find(r => r.id === id);
+        if (!rel) return;
+        const sPos = nodePositionsRef.current.get(rel.sourceId);
+        const tPos = nodePositionsRef.current.get(rel.targetId);
+        if (sPos && tPos) {
+          el.setAttribute('x1', `${sPos.x}`);
+          el.setAttribute('y1', `${sPos.y}`);
+          el.setAttribute('x2', `${tPos.x}`);
+          el.setAttribute('y2', `${tPos.y}`);
+        }
+      });
+    } else if (layoutMode === 'circular') {
+      const leadNodes = graphNodes.filter(n => n.tier === 'lead');
+      const otherNodes = graphNodes.filter(n => n.tier !== 'lead');
+
+      const innerRadius = relationshipLength * 0.9;
+      const outerRadius = relationshipLength * 1.8;
+
+      const placeCircle = (nodes: GraphNode[], radius: number) => {
+        const step = (Math.PI * 2) / Math.max(nodes.length, 1);
+        nodes.forEach((n, i) => {
+          const angle = i * step - Math.PI / 2;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          n.x = x;
+          n.y = y;
+          nodePositionsRef.current.set(n.id, { x, y });
+        });
+      };
+
+      placeCircle(leadNodes, innerRadius);
+      placeCircle(otherNodes, outerRadius);
+
+      nodeElsRef.current.forEach((el, id) => {
+        const pos = nodePositionsRef.current.get(id);
+        if (pos) el.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+      });
+
+      edgeElsRef.current.forEach((el, id) => {
+        const rel = relationships.find(r => r.id === id);
+        if (!rel) return;
+        const sPos = nodePositionsRef.current.get(rel.sourceId);
+        const tPos = nodePositionsRef.current.get(rel.targetId);
+        if (sPos && tPos) {
+          el.setAttribute('x1', `${sPos.x}`);
+          el.setAttribute('y1', `${sPos.y}`);
+          el.setAttribute('x2', `${tPos.x}`);
+          el.setAttribute('y2', `${tPos.y}`);
+        }
+      });
+    } else if (layoutMode === 'force') {
+      const sim = d3
+        .forceSimulation<GraphNode, GraphLink>(graphNodes)
+        .force(
+          'link',
+          d3
+            .forceLink<GraphNode, GraphLink>(graphLinks)
+            .id(d => d.id)
+            .distance(d => {
+              if (d.tier === 'primary') return relationshipLength;
+              if (d.tier === 'secondary') return relationshipLength * 1.3;
+              return relationshipLength * 1.6;
+            })
+            .strength(0.6)
+        )
+        .force('charge', d3.forceManyBody().strength(-450))
+        .force('collision', d3.forceCollide<GraphNode>().radius(d => d.radius + 18))
+        .force('center', d3.forceCenter(0, 0).strength(0.05))
+        .alpha(isPhysicsActive ? 0.8 : 0)
+        .alphaDecay(0.028);
+
+      sim.on('tick', () => {
+        nodeElsRef.current.forEach((el, id) => {
+          const node = graphNodes.find(n => n.id === id);
+          if (node && node.x !== undefined && node.y !== undefined) {
+            el.setAttribute('transform', `translate(${node.x},${node.y})`);
+            nodePositionsRef.current.set(id, { x: node.x, y: node.y });
+          }
+        });
+
+        edgeElsRef.current.forEach((el, id) => {
+          const link = graphLinks.find(l => l.id === id);
+          if (!link) return;
+          const s = link.source as GraphNode;
+          const t = link.target as GraphNode;
+          if (s?.x !== undefined && s?.y !== undefined && t?.x !== undefined && t?.y !== undefined) {
+            el.setAttribute('x1', `${s.x}`);
+            el.setAttribute('y1', `${s.y}`);
+            el.setAttribute('x2', `${t.x}`);
+            el.setAttribute('y2', `${t.y}`);
+          }
+        });
+      });
+
+      simulationRef.current = sim;
+    }
 
     return () => {
-      svg.on('.zoom', null);
+      if (simulationRef.current) simulationRef.current.stop();
     };
+  }, [layoutMode, graphNodes, graphLinks, relationshipLength, selectedCharacterId, relationships, concentricRadii, isPhysicsActive]);
+
+  // Zoom / Pan setup using D3
+  useEffect(() => {
+    if (!svgRef.current || !gRef.current) return;
+
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.2, 4.0])
+      .on('zoom', event => {
+        if (gRef.current) {
+          d3.select(gRef.current).attr('transform', event.transform.toString());
+        }
+      });
+
+    d3.select(svgRef.current).call(zoom).on('dblclick.zoom', null);
+    zoomBehaviorRef.current = zoom;
   }, []);
 
-  // Center / snap to view on initial load or layout switch
+  // Snap to center
   const handleSnapToCenter = useCallback(() => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    const svg = d3.select(svgRef.current);
-    svg
+    d3.select(svgRef.current)
       .transition()
-      .duration(700)
+      .duration(600)
       .ease(d3.easeCubicOut)
       .call(zoomBehaviorRef.current.transform, d3.zoomIdentity);
   }, []);
 
-  const handleZoomIn = useCallback(() => {
+  const handleZoomIn = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    d3.select(svgRef.current)
-      .transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.scaleBy, 1.3);
-  }, []);
+    d3.select(svgRef.current).transition().duration(250).call(zoomBehaviorRef.current.scaleBy, 1.25);
+  };
 
-  const handleZoomOut = useCallback(() => {
+  const handleZoomOut = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    d3.select(svgRef.current)
-      .transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.scaleBy, 0.77);
-  }, []);
+    d3.select(svgRef.current).transition().duration(250).call(zoomBehaviorRef.current.scaleBy, 0.8);
+  };
 
-  // Direct fast DOM update on simulation tick
-  const updateRender = useCallback(() => {
-    for (const node of graphNodes) {
-      const el = nodeElsRef.current.get(node.id);
-      if (el) {
-        el.setAttribute('transform', `translate(${node.x},${node.y})`);
-      }
-    }
-
-    for (const link of graphLinks) {
-      const el = edgeElsRef.current.get(link.id);
-      if (el) {
-        const sx = typeof link.source === 'object' ? (link.source as GraphNode).x : 0;
-        const sy = typeof link.source === 'object' ? (link.source as GraphNode).y : 0;
-        const tx = typeof link.target === 'object' ? (link.target as GraphNode).x : 0;
-        const ty = typeof link.target === 'object' ? (link.target as GraphNode).y : 0;
-        el.setAttribute('x1', String(sx));
-        el.setAttribute('y1', String(sy));
-        el.setAttribute('x2', String(tx));
-        el.setAttribute('y2', String(ty));
-      }
-    }
-  }, [graphNodes, graphLinks]);
-
-  // Run Simulation or Concentric Positioning
-  useEffect(() => {
-    if (!isPhysicsActive) return;
-
-    if (layoutMode === 'concentric' && selectedCharacterId) {
-      // Concentric Radar layout: Selected in center, ring 1 (primary), ring 2 (secondary), ring 3 (outer)
-      const ring1 = graphNodes.filter(n => n.concentricRing === 1);
-      const ring2 = graphNodes.filter(n => n.concentricRing === 2);
-      const ring3 = graphNodes.filter(n => n.concentricRing === 3);
-
-      const r1 = relationshipLength * 0.9;
-      const r2 = relationshipLength * 1.6;
-      const r3 = relationshipLength * 2.3;
-
-      const selectedNode = graphNodes.find(n => n.id === selectedCharacterId);
-      if (selectedNode) {
-        selectedNode.x = 0;
-        selectedNode.y = 0;
-        selectedNode.fx = 0;
-        selectedNode.fy = 0;
-        nodePositionsRef.current.set(selectedNode.id, { x: 0, y: 0 });
-      }
-
-      // Distribute nodes evenly on rings
-      ring1.forEach((n, i) => {
-        const angle = (i / Math.max(1, ring1.length)) * 2 * Math.PI - Math.PI / 2;
-        n.x = r1 * Math.cos(angle);
-        n.y = r1 * Math.sin(angle);
-        nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-      });
-
-      ring2.forEach((n, i) => {
-        const angle = (i / Math.max(1, ring2.length)) * 2 * Math.PI - Math.PI / 4;
-        n.x = r2 * Math.cos(angle);
-        n.y = r2 * Math.sin(angle);
-        nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-      });
-
-      ring3.forEach((n, i) => {
-        const angle = (i / Math.max(1, ring3.length)) * 2 * Math.PI;
-        n.x = r3 * Math.cos(angle);
-        n.y = r3 * Math.sin(angle);
-        nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-      });
-
-      updateRender();
-
-      // Light collision force to smooth minor overlaps
-      const sim = d3.forceSimulation<GraphNode, GraphLink>(graphNodes)
-        .force('collision', d3.forceCollide<GraphNode>().radius(d => d.radius + 18))
-        .alpha(0.3)
-        .on('tick', () => {
-          graphNodes.forEach(n => {
-            nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-          });
-          updateRender();
-        });
-
-      simulationRef.current = sim;
-      return () => {
-        sim.stop();
-      };
-    } else if (layoutMode === 'circular') {
-      // Circular story wheel layout
-      const count = graphNodes.length;
-      const radius = relationshipLength * 1.8;
-      graphNodes.forEach((n, i) => {
-        const angle = (i / Math.max(1, count)) * 2 * Math.PI - Math.PI / 2;
-        n.x = radius * Math.cos(angle);
-        n.y = radius * Math.sin(angle);
-        nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-      });
-      updateRender();
-    } else {
-      // Organic D3 Force layout
-      const sim = d3.forceSimulation<GraphNode, GraphLink>(graphNodes)
-        .force(
-          'link',
-          d3.forceLink<GraphNode, GraphLink>(graphLinks)
-            .id(d => (d as GraphNode).id)
-            .distance(d => (d.tier === 'primary' ? relationshipLength * 0.8 : relationshipLength * 1.15))
-        )
-        .force('charge', d3.forceManyBody<GraphNode>().strength(d => (d.tier === 'lead' ? -550 : -380)))
-        .force('center', d3.forceCenter(0, 0))
-        .force('collision', d3.forceCollide<GraphNode>().radius(d => d.radius + 24))
-        .alphaDecay(0.028)
-        .on('tick', () => {
-          graphNodes.forEach(n => {
-            nodePositionsRef.current.set(n.id, { x: n.x, y: n.y });
-          });
-          updateRender();
-        });
-
-      simulationRef.current = sim;
-      return () => {
-        sim.stop();
-      };
-    }
-  }, [graphNodes, graphLinks, relationshipLength, layoutMode, selectedCharacterId, isPhysicsActive, updateRender]);
-
-  // Pointer Drag Handlers (replaces D3 drag to guarantee zero `d.id` errors)
-  const handleNodePointerDown = (e: React.PointerEvent, node: GraphNode) => {
+  // Node Dragging Pointer Events
+  const handleNodePointerDown = (e: React.PointerEvent<SVGGElement>, node: GraphNode) => {
     e.stopPropagation();
-    try {
-      (e.target as Element).setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore if pointer capture fails
-    }
-
-    if (simulationRef.current) {
-      simulationRef.current.alphaTarget(0.3).restart();
-    }
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
 
     draggingRef.current = {
       nodeId: node.id,
@@ -388,260 +374,217 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       startY: e.clientY,
     };
 
-    node.fx = node.x;
-    node.fy = node.y;
+    if (simulationRef.current) {
+      simulationRef.current.alphaTarget(0.3).restart();
+      node.fx = node.x;
+      node.fy = node.y;
+    }
   };
 
-  const handleSvgPointerMove = (e: React.PointerEvent) => {
-    if (!draggingRef.current || !svgRef.current || !gRef.current) return;
-    const { nodeId, startX, startY } = draggingRef.current;
+  const handleSvgPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!draggingRef.current) return;
 
-    if (Math.hypot(e.clientX - startX, e.clientY - startY) > 3) {
-      draggingRef.current.hasMoved = true;
+    const drag = draggingRef.current;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+
+    if (!drag.hasMoved && Math.hypot(dx, dy) > 4) {
+      drag.hasMoved = true;
     }
 
-    const node = graphNodes.find(n => n.id === nodeId);
-    if (!node) return;
+    if (drag.hasMoved) {
+      const node = graphNodes.find(n => n.id === drag.nodeId);
+      if (!node || !svgRef.current || !gRef.current) return;
 
-    // Convert client coordinates to SVG transformed group coordinates
-    const gMatrix = gRef.current.getScreenCTM();
-    if (gMatrix) {
+      const ctm = gRef.current.getScreenCTM();
+      if (!ctm) return;
+
+      const inv = ctm.inverse();
       const pt = svgRef.current.createSVGPoint();
       pt.x = e.clientX;
       pt.y = e.clientY;
-      const transformed = pt.matrixTransform(gMatrix.inverse());
-      node.fx = transformed.x;
-      node.fy = transformed.y;
+      const transformed = pt.matrixTransform(inv);
+
       node.x = transformed.x;
       node.y = transformed.y;
+      if (simulationRef.current) {
+        node.fx = transformed.x;
+        node.fy = transformed.y;
+      }
       nodePositionsRef.current.set(node.id, { x: node.x, y: node.y });
-      updateRender();
+
+      const el = nodeElsRef.current.get(node.id);
+      if (el) el.setAttribute('transform', `translate(${node.x},${node.y})`);
+
+      edgeElsRef.current.forEach((edgeEl, linkId) => {
+        const link = graphLinks.find(l => l.id === linkId);
+        if (!link) return;
+        const s = link.source as GraphNode;
+        const t = link.target as GraphNode;
+        if (s.id === node.id || t.id === node.id) {
+          const sPos = nodePositionsRef.current.get(s.id);
+          const tPos = nodePositionsRef.current.get(t.id);
+          if (sPos && tPos) {
+            edgeEl.setAttribute('x1', `${sPos.x}`);
+            edgeEl.setAttribute('y1', `${sPos.y}`);
+            edgeEl.setAttribute('x2', `${tPos.x}`);
+            edgeEl.setAttribute('y2', `${tPos.y}`);
+          }
+        }
+      });
     }
   };
 
-  const handleSvgPointerUp = (e: React.PointerEvent) => {
+  const handleSvgPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!draggingRef.current) return;
-    const { nodeId, hasMoved } = draggingRef.current;
 
-    const node = graphNodes.find(n => n.id === nodeId);
-    if (node && layoutMode !== 'concentric') {
-      node.fx = null;
-      node.fy = null;
+    const drag = draggingRef.current;
+    if (!drag.hasMoved) {
+      onSelectCharacter(drag.nodeId === selectedCharacterId ? null : drag.nodeId);
     }
 
     if (simulationRef.current) {
       simulationRef.current.alphaTarget(0);
-    }
-
-    // If user clicked without dragging, select this character
-    if (!hasMoved) {
-      onSelectCharacter(nodeId);
+      const node = graphNodes.find(n => n.id === drag.nodeId);
+      if (node) {
+        node.fx = null;
+        node.fy = null;
+      }
     }
 
     draggingRef.current = null;
   };
 
-  // Click on background clears selection
-  const handleSvgClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).tagName === 'svg' || (e.target as HTMLElement).id === 'bg-rect') {
-      onSelectCharacter(null);
-    }
+  const getLabelFontSize = (name: string, tier: string): string => {
+    const isLead = tier === 'lead';
+    const isSupporting = tier === 'supporting';
+    if (isLead) return name.length > 14 ? '13px' : '15px';
+    if (isSupporting) return name.length > 14 ? '11px' : '12px';
+    return '10px';
   };
-
-  // Concentric radar guide radii
-  const concentricRadii = useMemo(() => {
-    if (layoutMode !== 'concentric') return [];
-    return [
-      relationshipLength * 0.9,
-      relationshipLength * 1.6,
-      relationshipLength * 2.3,
-    ];
-  }, [layoutMode, relationshipLength]);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full select-none overflow-hidden transition-colors duration-300 ${
-        isDarkMode ? 'bg-[#0f172a]' : 'bg-[#fafaf9]'
+      className={`w-full h-full relative overflow-hidden select-none transition-colors duration-300 ${
+        isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
       }`}
-      onClick={handleSvgClick}
     >
-      {/* Top Left Floating Header & Controls matching StageAgent */}
-      <div className="absolute top-4 left-5 z-20 flex flex-col gap-2.5 pointer-events-none">
-        {/* StageAgent prominent counters header */}
-        <div className="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100 drop-shadow-xs">
-          <span>{characters.length}</span> characters, <span>{relationships.length}</span> relationships
-        </div>
-
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Day / Night Mode Button matching screenshot */}
-          <button
-            onClick={onToggleDarkMode}
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            className={`p-2.5 rounded-xl border backdrop-blur-md transition-all shadow-sm ${
-              isDarkMode
-                ? 'bg-slate-800/90 text-amber-300 border-slate-700 hover:bg-slate-700'
-                : 'bg-white/90 text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
-          {/* Physics Play / Pause */}
-          <button
-            onClick={() => setIsPhysicsActive(!isPhysicsActive)}
-            title={isPhysicsActive ? 'Pause physics simulation' : 'Resume physics simulation'}
-            className={`p-2.5 rounded-xl border backdrop-blur-md transition-all shadow-sm ${
-              isDarkMode
-                ? 'bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-700'
-                : 'bg-white/90 text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            {isPhysicsActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 text-emerald-600" />}
-          </button>
-
-          {/* Quick Snap to Center */}
-          <button
-            onClick={handleSnapToCenter}
-            title="Snap graph to center"
-            className={`p-2.5 rounded-xl border backdrop-blur-md transition-all shadow-sm ${
-              isDarkMode
-                ? 'bg-slate-800/90 text-slate-300 border-slate-700 hover:bg-slate-700'
-                : 'bg-white/90 text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Compass className="w-4 h-4" />
-          </button>
-
-          {/* Dynamic Spring Length Slider */}
-          <div
-            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border backdrop-blur-md shadow-sm ${
-              isDarkMode
-                ? 'bg-slate-800/90 border-slate-700 text-slate-300'
-                : 'bg-white/90 border-slate-200 text-slate-700'
-            }`}
-          >
-            <span className="text-xs font-medium whitespace-nowrap">Spacing</span>
-            <input
-              type="range"
-              min="90"
-              max="320"
-              value={relationshipLength}
-              onChange={e => onRelationshipLengthChange(Number(e.target.value))}
-              className="w-20 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-violet-600"
-              title="Adjust relationship edge spacing"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Top Right Floating Controls: Book Front Cover Drag & Drop Box + Clear Selection + Zoom Bar */}
-      <div className="absolute top-4 right-5 z-20 flex items-start gap-3 pointer-events-auto">
-        {selectedCharacterId && (
-          <button
-            onClick={() => onSelectCharacter(null)}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl border shadow-sm transition-all mt-1 ${
-              isDarkMode
-                ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            Clear selection
-          </button>
-        )}
-
-        {/* Book Front Cover Drag & Drop Box (matching user placement in Screenshot) */}
+      {/* Interactive Book Cover Watermark (Top-Left) */}
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-3">
         <div
           onDragOver={handleCoverDragOver}
           onDragLeave={handleCoverDragLeave}
           onDrop={handleCoverDrop}
-          onClick={() => {
-            if (!coverImageUrl) {
-              coverFileInputRef.current?.click();
-            }
-          }}
-          className={`relative group w-24 sm:w-28 h-32 sm:h-38 rounded-xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden shadow-lg backdrop-blur-md ${
+          onClick={() => coverFileInputRef.current?.click()}
+          title="Click or drag-and-drop an image to update the book's front cover"
+          className={`group relative rounded-xl overflow-hidden cursor-pointer shadow-lg border transition-all ${
             isCoverDragging
-              ? 'border-violet-500 bg-violet-100/90 dark:bg-violet-950/90 scale-105 ring-4 ring-violet-500/40 shadow-xl'
-              : coverImageUrl
-              ? 'border-slate-300 dark:border-slate-700 bg-slate-900/10 hover:shadow-xl'
-              : 'border-dashed border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 hover:border-violet-500 hover:bg-violet-50/40 dark:hover:bg-violet-950/30 cursor-pointer'
+              ? 'ring-4 ring-violet-500 scale-105 border-violet-500'
+              : isDarkMode
+              ? 'border-slate-800 bg-slate-900 hover:border-violet-500'
+              : 'border-slate-200 bg-white hover:border-violet-500'
           }`}
-          title={
-            coverImageUrl
-              ? `${bookTitle || 'Book'} Cover (Drop another image or click Replace)`
-              : 'Drag and drop front cover image here, or click to browse'
-          }
         >
           {coverImageUrl ? (
-            <>
-              <img
-                src={coverImageUrl}
-                alt={`${bookTitle || 'Book'} front cover`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1 text-white">
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    coverFileInputRef.current?.click();
-                  }}
-                  className="px-2 py-1 rounded-md bg-violet-600 hover:bg-violet-700 text-[10px] font-bold flex items-center gap-1 shadow-sm transition-colors"
-                  title="Replace book cover"
-                >
-                  <Upload className="w-3 h-3" />
-                  <span>Replace</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (onUpdateCoverImage) onUpdateCoverImage(undefined);
-                  }}
-                  className="px-2 py-1 rounded-md bg-red-600 hover:bg-red-700 text-[10px] font-bold flex items-center gap-1 shadow-sm transition-colors"
-                  title="Remove book cover"
-                >
-                  <Trash2 className="w-3 h-3" />
-                  <span>Remove</span>
-                </button>
-              </div>
-            </>
+            <img
+              src={coverImageUrl}
+              alt={bookTitle || 'Novel Cover'}
+              className="w-12 h-16 sm:w-14 sm:h-20 object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center p-2 text-center text-slate-500 dark:text-slate-400 select-none">
-              <BookOpen
-                className={`w-6 h-6 mb-1 ${
-                  isCoverDragging
-                    ? 'text-violet-600 dark:text-violet-400 scale-110'
-                    : 'text-slate-400 dark:text-slate-500 group-hover:text-violet-500'
-                } transition-all`}
-              />
-              <span className="text-[10px] font-bold leading-tight text-slate-800 dark:text-slate-200">
-                {isCoverDragging ? 'Drop Image!' : 'Book Cover'}
-              </span>
-              <span className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
-                Drag & drop
-              </span>
+            <div className="w-12 h-16 sm:w-14 sm:h-20 flex flex-col items-center justify-center p-1.5 text-center text-slate-400 dark:text-slate-500 group-hover:text-violet-500">
+              <BookOpen className="w-5 h-5 mb-1" />
+              <span className="text-[9px] font-bold leading-tight">Add Cover</span>
             </div>
           )}
+
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Upload className="w-4 h-4 text-white drop-shadow" />
+          </div>
+
+          <input
+            ref={coverFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={e => {
+              const file = e.target.files?.[0];
+              if (file) handleCoverFileProcess(file);
+            }}
+            className="hidden"
+          />
         </div>
 
-        {/* Hidden File Input for Front Cover */}
-        <input
-          ref={coverFileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={e => {
-            const file = e.target.files?.[0];
-            if (file) handleCoverFileProcess(file);
-          }}
-          className="hidden"
-        />
+        {bookTitle && (
+          <div className="hidden sm:block">
+            <h1 className="font-serif font-extrabold text-base lg:text-lg tracking-tight leading-none text-slate-900 dark:text-white drop-shadow-xs">
+              {bookTitle}
+            </h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+              Interactive Literary Character Web
+            </p>
+          </div>
+        )}
+      </div>
 
-        {/* Vertical Zoom Controls Bar */}
+      {/* Floating Canvas Controls (Top-Right) */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        {/* Relationship Distance Slider */}
         <div
-          className={`flex flex-col gap-1 p-1 rounded-xl border backdrop-blur-md shadow-sm ${
-            isDarkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white/90 border-slate-200'
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border backdrop-blur-md shadow-sm text-xs font-medium ${
+            isDarkMode
+              ? 'bg-slate-900/90 border-slate-800 text-slate-200'
+              : 'bg-white/90 border-slate-200 text-slate-700'
+          }`}
+        >
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
+            Distance
+          </span>
+          <input
+            type="range"
+            min={100}
+            max={280}
+            step={10}
+            value={relationshipLength}
+            onChange={e => onRelationshipLengthChange(Number(e.target.value))}
+            className="w-20 sm:w-28 accent-violet-600 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
+          />
+        </div>
+
+        {/* Force Mode Physics Freeze/Resume Toggle */}
+        {layoutMode === 'force' && (
+          <button
+            onClick={() => setIsPhysicsActive(!isPhysicsActive)}
+            title={isPhysicsActive ? 'Freeze physics simulation' : 'Resume live physics'}
+            className={`p-2 rounded-xl border backdrop-blur-md shadow-sm transition-colors ${
+              isPhysicsActive
+                ? 'bg-violet-600 border-violet-600 text-white'
+                : isDarkMode
+                ? 'bg-slate-900/90 border-slate-800 text-slate-300'
+                : 'bg-white/90 border-slate-200 text-slate-700'
+            }`}
+          >
+            {isPhysicsActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
+        )}
+
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={onToggleDarkMode}
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className={`p-2 rounded-xl border backdrop-blur-md shadow-sm transition-colors ${
+            isDarkMode
+              ? 'bg-slate-900/90 border-slate-800 text-amber-400 hover:bg-slate-800'
+              : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-100'
+          }`}
+        >
+          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
+        {/* Zoom In, Out & Reset */}
+        <div
+          className={`flex items-center rounded-xl border backdrop-blur-md shadow-sm p-0.5 ${
+            isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-200'
           }`}
         >
           <button
@@ -729,7 +672,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         <rect id="bg-rect" x="-2000" y="-2000" width="4000" height="4000" fill="transparent" />
 
         <g ref={gRef}>
-          {/* Concentric Guide Rings in Radar Mode (exactly like the StageAgent screenshots!) */}
+          {/* Concentric Guide Rings in Radar Mode */}
           {layoutMode === 'concentric' && (
             <g className="concentric-rings pointer-events-none">
               {concentricRadii.map((r, idx) => (
@@ -804,9 +747,11 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
               const isConnected = !connectedIds || connectedIds.has(node.id);
               const isDimmed = !isConnected;
 
-              // Outer Ring Color
+              // Outer Ring Color - adopts color circle if chosen, else tier color
               const ringColor =
-                node.tier === 'lead'
+                node.avatarPreset?.startsWith('color_')
+                  ? COLOR_CIRCLE_PRESETS.find(p => p.id === node.avatarPreset)?.color || '#94a3b8'
+                  : node.tier === 'lead'
                   ? '#8b5cf6'
                   : node.tier === 'supporting'
                   ? '#0ea5e9'
@@ -908,7 +853,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         </g>
       </svg>
 
-      {/* Hover Quick Card Tooltip (matching the tooltip in the user's screenshot!) */}
+      {/* Hover Quick Card Tooltip */}
       {hoveredCharacter && hoverPos && (
         <div
           className={`absolute pointer-events-none z-30 px-3.5 py-2.5 rounded-xl border shadow-xl backdrop-blur-md transition-opacity duration-150 ${
@@ -919,49 +864,57 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
           style={{
             left: `${hoverPos.x + 18}px`,
             top: `${hoverPos.y - 12}px`,
-            transform: 'translateY(-50%)',
+            maxWidth: '240px',
           }}
         >
-          <div className="font-bold text-sm leading-tight text-slate-900 dark:text-white">
-            {hoveredCharacter.displayName}
+          <div className="flex items-center gap-2 mb-1">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                hoveredCharacter.tier === 'lead'
+                  ? 'bg-violet-500'
+                  : hoveredCharacter.tier === 'supporting'
+                  ? 'bg-sky-500'
+                  : 'bg-slate-400'
+              }`}
+            />
+            <span className="font-bold text-xs truncate">{hoveredCharacter.fullName}</span>
           </div>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="capitalize font-medium text-violet-600 dark:text-violet-400">
-              {hoveredCharacter.tier}
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>{hoveredCharacter.gender}</span>
-            <span aria-hidden="true">·</span>
-            <span>{hoveredCharacter.ageGroup}</span>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">
+            {hoveredCharacter.archetypeTag || hoveredCharacter.tier} · {hoveredCharacter.gender}
           </div>
-          {hoveredCharacter.archetypeTag && (
-            <div className="mt-1 text-[11px] text-slate-600 dark:text-slate-300 italic line-clamp-1">
-              {hoveredCharacter.archetypeTag}
-            </div>
-          )}
+          <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+            {hoveredCharacter.overviewBio}
+          </p>
         </div>
       )}
 
-      {/* Hover Link Tooltip */}
+      {/* Hover Relationship Tooltip */}
       {hoveredLink && (
         <div
-          className={`absolute pointer-events-none z-30 px-3 py-1.5 rounded-lg border shadow-lg backdrop-blur-md ${
+          className={`absolute pointer-events-none z-30 px-3 py-2 rounded-xl border shadow-xl backdrop-blur-md text-xs ${
             isDarkMode
-              ? 'bg-slate-900/95 border-slate-700 text-slate-200'
+              ? 'bg-slate-900/95 border-slate-700 text-slate-100'
               : 'bg-white/95 border-slate-200 text-slate-800'
           }`}
           style={{
-            left: `${hoveredLink.x + 10}px`,
+            left: `${hoveredLink.x + 14}px`,
             top: `${hoveredLink.y - 10}px`,
+            maxWidth: '220px',
           }}
         >
-          <div className="text-xs font-semibold" style={{ color: RELATIONSHIP_CONFIGS[hoveredLink.link.type]?.color }}>
-            {hoveredLink.link.customLabel || RELATIONSHIP_CONFIGS[hoveredLink.link.type]?.name}
+          <div className="flex items-center gap-1.5 font-bold mb-0.5">
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{
+                backgroundColor: RELATIONSHIP_CONFIGS[hoveredLink.link.type]?.color || '#94a3b8',
+              }}
+            />
+            <span>{hoveredLink.link.customLabel || RELATIONSHIP_CONFIGS[hoveredLink.link.type]?.name}</span>
           </div>
           {hoveredLink.link.notes && (
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
               {hoveredLink.link.notes}
-            </div>
+            </p>
           )}
         </div>
       )}
