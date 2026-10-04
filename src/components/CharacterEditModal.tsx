@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Character, CharacterTier, CharacterGender } from '../types';
-import { AVATAR_PRESETS, getCharacterAvatar } from '../data/avatarPresets';
-import { X, User, Upload, Image as ImageIcon, Camera, Trash2, CheckCircle2 } from 'lucide-react';
+import { AVATAR_PRESETS, COLOR_CIRCLE_PRESETS, getCharacterAvatar, getInitials } from '../data/avatarPresets';
+import { X, User, Upload, Image as ImageIcon, Camera, Trash2, CheckCircle2, Check } from 'lucide-react';
 
 interface CharacterEditModalProps {
   initialCharacter: Character | null; // null for new character
@@ -159,93 +159,77 @@ export const CharacterEditModal: React.FC<CharacterEditModalProps> = ({
       >
         {/* Header */}
         <div
-          className={`px-6 py-4 border-b flex items-center justify-between ${
+          className={`px-6 py-4 border-b flex items-center justify-between gap-3 ${
             isDarkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-50'
           }`}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-            <h2 className="font-serif font-extrabold text-xl leading-tight text-slate-950 dark:text-white">
+            <h2 className="font-serif font-bold text-lg text-slate-900 dark:text-white">
               {isEditing ? `Edit ${initialCharacter.displayName}` : 'Add New Character'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Hidden File Picker Input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoUpload}
-          className="hidden"
-        />
-
         {/* Form Body */}
         <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Top Row: Interactive Drop-Avatar Node Preview + Name Fields */}
-          <div className="flex items-start gap-4">
-            {/* Interactive Node Avatar Drop Target */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              title="Click or drag an image here to populate this character node"
-              className={`group relative flex flex-col items-center gap-1.5 shrink-0 cursor-pointer p-1 rounded-2xl border-2 transition-all ${
-                isDragging
-                  ? 'border-violet-500 bg-violet-100/60 dark:bg-violet-950/60 scale-105 shadow-lg'
-                  : 'border-dashed border-slate-300 dark:border-slate-700 hover:border-violet-400 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-              }`}
-            >
-              <div className="relative">
+          {/* Identity & Portrait Preview */}
+          <div
+            className={`p-4 rounded-xl border ${
+              isDarkMode ? 'bg-slate-800/40 border-slate-700/80' : 'bg-slate-50 border-slate-200'
+            }`}
+          >
+            <div className="flex items-start gap-4">
+              {/* Live Avatar Preview */}
+              <div className="relative group shrink-0">
                 <img
                   src={previewAvatar}
-                  alt="Avatar preview"
-                  className="w-18 h-18 rounded-full object-cover ring-2 ring-violet-500 shadow-md bg-slate-100 dark:bg-slate-800 transition-transform group-hover:scale-[1.02]"
+                  alt={displayName || fullName || 'Preview'}
+                  className="w-20 h-20 rounded-full object-cover ring-4 ring-violet-500/50 shadow-md bg-white dark:bg-slate-800"
                 />
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <Camera className="w-6 h-6" />
-                </div>
-                {isCustomImageActive && (
-                  <div
-                    title="Custom portrait loaded"
-                    className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full shadow-xs"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  </div>
-                )}
-              </div>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                {isDragging ? 'Drop Image Here!' : 'Drop Image'}
-              </span>
-            </div>
-
-            <div className="flex-1 space-y-3">
-              <div>
-                <label className="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-200">
-                  Full Character Name <span className="text-red-500">*</span>
-                </label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Upload portrait photo"
+                  className="absolute bottom-0 right-0 p-1.5 rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 transition-transform active:scale-95"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
                 <input
-                  type="text"
-                  required
-                  placeholder="e.g. Kunta Kinte (Toby)"
-                  value={fullName}
-                  onChange={e => handleFullNameChange(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded-lg text-xs font-medium border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
-                    isDarkMode
-                      ? 'bg-slate-800 border-slate-700 text-slate-100'
-                      : 'bg-white border-slate-300 text-slate-950'
-                  }`}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Name & Role Inputs */}
+              <div className="flex-1 space-y-3 min-w-0">
+                <div>
+                  <label className="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-200">
+                    Full Character Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Kunta Kinte (Toby)"
+                    value={fullName}
+                    onChange={e => handleFullNameChange(e.target.value)}
+                    className={`w-full px-3 py-1.5 rounded-lg text-xs font-medium border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                      isDarkMode
+                        ? 'bg-slate-800 border-slate-700 text-slate-100'
+                        : 'bg-white border-slate-300 text-slate-950'
+                    }`}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-200">
                     Display Name (on Graph)
@@ -421,6 +405,55 @@ export const CharacterEditModal: React.FC<CharacterEditModalProps> = ({
             </div>
           </div>
 
+          {/* 6 Coloured Circles Matching Relationship Types */}
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                Or Select a Coloured Circle (Relationship / Role Type)
+              </label>
+              {avatarPreset?.startsWith('color_') && !avatarUrl && (
+                <span className="text-[10px] font-semibold text-violet-600 dark:text-violet-400">
+                  {COLOR_CIRCLE_PRESETS.find(p => p.id === avatarPreset)?.label} selected
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              {COLOR_CIRCLE_PRESETS.map(preset => {
+                const isSelected = avatarPreset === preset.id && !avatarUrl;
+                const initials = getInitials(displayName || fullName || preset.label.slice(0, 2));
+                return (
+                  <button
+                    type="button"
+                    key={preset.id}
+                    onClick={() => {
+                      setAvatarPreset(preset.id);
+                      setAvatarUrl('');
+                    }}
+                    className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-center cursor-pointer ${
+                      isSelected
+                        ? 'border-violet-600 bg-violet-100/70 dark:bg-violet-950/80 ring-2 ring-violet-500 shadow-sm scale-[1.02]'
+                        : 'border-transparent hover:bg-slate-200/60 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md transition-transform relative"
+                      style={{ backgroundColor: preset.color }}
+                    >
+                      {isSelected ? (
+                        <Check className="w-5 h-5 text-white drop-shadow-sm stroke-[3]" />
+                      ) : (
+                        <span>{initials}</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-semibold leading-tight text-slate-700 dark:text-slate-200">
+                      {preset.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Vector Presets Gallery */}
           <div className="pt-1">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
@@ -479,8 +512,8 @@ export const CharacterEditModal: React.FC<CharacterEditModalProps> = ({
                 Historical Context & Themes
               </label>
               <textarea
-                rows={2}
-                placeholder="Social commentary, historical significance, philosophical role..."
+                rows={3}
+                placeholder="Real history connections, social status, period notes..."
                 value={historicalNotes}
                 onChange={e => setHistoricalNotes(e.target.value)}
                 className={`w-full p-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none ${
@@ -493,11 +526,11 @@ export const CharacterEditModal: React.FC<CharacterEditModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-200">
-                Famous Quotes (one per line)
+                Memorable Quotes (1 per line)
               </label>
               <textarea
-                rows={2}
-                placeholder="Famous lines or quotes from the book..."
+                rows={3}
+                placeholder="Add quotes..."
                 value={quotesText}
                 onChange={e => setQuotesText(e.target.value)}
                 className={`w-full p-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none ${
@@ -509,22 +542,26 @@ export const CharacterEditModal: React.FC<CharacterEditModalProps> = ({
             </div>
           </div>
 
-          {/* Footer Submit Buttons */}
+          {/* Form Actions */}
           <div
-            className={`pt-4 border-t flex items-center justify-end gap-2 ${
-              isDarkMode ? 'border-slate-800' : 'border-slate-200'
+            className={`pt-4 border-t flex items-center justify-end gap-2.5 sticky bottom-0 ${
+              isDarkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'
             }`}
           >
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-colors ${
+                isDarkMode
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800'
+                  : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+              }`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-700 text-white shadow-sm transition-colors"
+              className="px-5 py-2 rounded-xl text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white shadow-md active:scale-95 transition-all"
             >
               {isEditing ? 'Save Changes' : 'Create Character'}
             </button>
