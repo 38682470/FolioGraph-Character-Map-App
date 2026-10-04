@@ -68,275 +68,240 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
       <path d="M 50 44 L 49 53 L 52 53" stroke="#1f2937" stroke-width="2.2" fill="none" stroke-linecap="round"/>
       <!-- Full Beard & Mustache -->
       <path d="M 30 52 C 26 82 74 82 70 52 C 64 62 36 62 30 52 Z" fill="#44403c" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 40 56 Q 50 61 60 56 Q 50 54 40 56 Z" fill="#292524" stroke="#1f2937" stroke-width="1.8"/>
       <!-- Coat -->
-      <path d="M 18 100 L 28 72 L 72 72 L 82 100 Z" fill="#78350f" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 44 72 L 50 82 L 56 72 Z" fill="#e2e8f0" stroke="#1f2937" stroke-width="1.8"/>
+      <path d="M 20 100 L 30 70 L 70 70 L 80 100 Z" fill="#78350f" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 40 70 L 50 82 L 60 70 Z" fill="#f5f5f4" stroke="#1f2937" stroke-width="2"/>
     `),
   },
   {
     id: 'cosette',
-    label: 'Cosette (Brunette / Green Dress)',
+    label: 'Cosette (Heroine / Gold Hair & Blue Ribbon)',
     category: 'heroine',
-    svgDataUri: makeSvg('#fdf4ff', `
-      <!-- Long Hair Behind -->
-      <path d="M 22 45 C 16 75 22 88 30 90 L 70 90 C 78 88 84 75 78 45 Z" fill="#52321e" stroke="#1f2937" stroke-width="2.5"/>
+    svgDataUri: makeSvg('#fdf2f8', `
+      <!-- Long Golden Hair -->
+      <path d="M 26 40 C 20 15 80 15 74 40 C 82 75 74 95 68 95 C 62 95 68 55 64 45 C 50 25 36 45 32 45 C 28 55 34 95 28 95 C 22 95 16 75 26 40 Z" fill="#ca8a04" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Ribbon Headband -->
+      <path d="M 27 34 Q 50 24 73 34" stroke="#0284c7" stroke-width="5" fill="none"/>
       <!-- Face -->
-      <path d="M 32 40 C 32 68 68 68 68 40 C 68 30 32 30 32 40 Z" fill="#ffedd5" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Bangs -->
-      <path d="M 28 38 C 36 24 64 24 72 38 C 66 32 50 30 40 33 C 34 35 30 38 28 38 Z" fill="#52321e" stroke="#1f2937" stroke-width="2"/>
-      <!-- Hair sides flowing -->
-      <path d="M 26 42 C 25 58 31 75 35 78" stroke="#1f2937" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M 74 42 C 75 58 69 75 65 78" stroke="#1f2937" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <!-- Eyes & Gentle Lashes -->
-      <circle cx="43" cy="48" r="2.5" fill="#1f2937"/>
-      <circle cx="57" cy="48" r="2.5" fill="#1f2937"/>
-      <path d="M 39 44 Q 43 42 47 44" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <path d="M 53 44 Q 57 42 61 44" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <!-- Nose & Sweet Smile -->
-      <path d="M 50 48 L 49 53 L 51 53" stroke="#1f2937" stroke-width="1.5" fill="none"/>
-      <path d="M 45 58 Q 50 63 55 58" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- Rosy Cheeks -->
-      <circle cx="38" cy="54" r="3.5" fill="#fb7185" opacity="0.4"/>
-      <circle cx="62" cy="54" r="3.5" fill="#fb7185" opacity="0.4"/>
+      <path d="M 32 40 C 32 66 68 66 68 40 C 68 32 32 32 32 40 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Eyes & Soft Smile -->
+      <circle cx="43" cy="48" r="2.5" fill="#0369a1"/>
+      <circle cx="57" cy="48" r="2.5" fill="#0369a1"/>
+      <path d="M 39 44 Q 43 42 47 44" stroke="#713f12" stroke-width="1.8" fill="none"/>
+      <path d="M 53 44 Q 57 42 61 44" stroke="#713f12" stroke-width="1.8" fill="none"/>
+      <path d="M 46 58 Q 50 62 54 58" stroke="#e11d48" stroke-width="2" fill="none" stroke-linecap="round"/>
       <!-- Dress -->
-      <path d="M 26 100 L 36 74 L 64 74 L 74 100 Z" fill="#86efac" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 42 74 Q 50 80 58 74" stroke="#1f2937" stroke-width="2" fill="#ffffff"/>
+      <path d="M 26 100 L 36 70 L 64 70 L 74 100 Z" fill="#0284c7" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 40 70 Q 50 78 60 70 Z" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
     `),
   },
   {
     id: 'javert',
-    label: 'Javert (Inspector / Top Hat / Mustache)',
+    label: 'Inspector Javert (Police Top Hat & Greatcoat)',
     category: 'authority',
     svgDataUri: makeSvg('#f1f5f9', `
-      <!-- Face -->
-      <path d="M 32 46 C 32 72 68 72 68 46 C 68 38 32 38 32 46 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Stern Eyes & Brows -->
-      <circle cx="42" cy="51" r="2.2" fill="#1f2937"/>
-      <circle cx="58" cy="51" r="2.2" fill="#1f2937"/>
-      <path d="M 37 47 L 46 49" stroke="#1f2937" stroke-width="2.8" stroke-linecap="round"/>
-      <path d="M 63 47 L 54 49" stroke="#1f2937" stroke-width="2.8" stroke-linecap="round"/>
-      <!-- Nose & Serious Mustache -->
-      <path d="M 50 49 L 49 56 L 52 56" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <path d="M 38 58 Q 50 56 62 58 Q 50 64 38 58 Z" fill="#374151" stroke="#1f2937" stroke-width="2"/>
-      <!-- Mouth -->
-      <line x1="46" y1="64" x2="54" y2="64" stroke="#1f2937" stroke-width="2"/>
+      <!-- Stern Face -->
+      <path d="M 31 46 C 31 70 69 70 69 46 C 69 36 31 36 31 46 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Sideburns -->
+      <path d="M 31 42 L 31 56 L 36 50 Z" fill="#334155"/>
+      <path d="M 69 42 L 69 56 L 64 50 Z" fill="#334155"/>
+      <!-- Severe Eyes & Narrow Brows -->
+      <circle cx="42" cy="50" r="2" fill="#0f172a"/>
+      <circle cx="58" cy="50" r="2" fill="#0f172a"/>
+      <path d="M 37 46 L 47 48" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 63 46 L 53 48" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Grim Mouth -->
+      <line x1="44" y1="62" x2="56" y2="62" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
       <!-- Tall Inspector Top Hat -->
-      <path d="M 20 40 L 80 40 C 80 37 20 37 20 40 Z" fill="#1f2937" stroke="#111827" stroke-width="2"/>
-      <path d="M 28 40 L 32 15 L 68 15 L 72 40 Z" fill="#1f2937" stroke="#111827" stroke-width="2.5"/>
-      <rect x="30" y="33" width="40" height="6" fill="#3b82f6"/>
-      <!-- Coat & Cravat -->
-      <path d="M 20 100 L 30 74 L 70 74 L 80 100 Z" fill="#0f172a" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 44 74 L 50 83 L 56 74 Z" fill="#f8fafc" stroke="#1f2937" stroke-width="1.8"/>
+      <ellipse cx="50" cy="40" rx="34" ry="7" fill="#0f172a" stroke="#1f2937" stroke-width="2"/>
+      <path d="M 32 40 L 34 14 L 66 14 L 68 40 Z" fill="#1e293b" stroke="#1f2937" stroke-width="2.5"/>
+      <rect x="33" y="32" width="34" height="6" fill="#0284c7"/>
+      <!-- High Collar Greatcoat -->
+      <path d="M 22 100 L 32 68 L 68 68 L 78 100 Z" fill="#09090b" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 32 68 L 42 80 L 58 80 L 68 68 Z" fill="#18181b"/>
     `),
   },
   {
     id: 'eponine',
-    label: 'Éponine (Auburn Hair / Plaid Urchin Shawl)',
+    label: 'Éponine (Street Urchin / Red Scarf)',
     category: 'heroine',
     svgDataUri: makeSvg('#fef2f2', `
-      <!-- Loose Auburn Hair -->
-      <path d="M 22 42 C 16 75 22 86 30 90 L 70 90 C 78 86 84 75 78 42 Z" fill="#c2410c" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Face -->
-      <path d="M 32 40 C 32 68 68 68 68 40 C 68 30 32 30 32 40 Z" fill="#ffedd5" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Tousled Hair Curls -->
-      <path d="M 26 36 C 36 22 64 22 74 36 C 64 30 52 28 42 32 C 32 32 26 36 26 36 Z" fill="#ea580c" stroke="#1f2937" stroke-width="2"/>
-      <path d="M 24 42 C 22 60 28 72 32 76" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <path d="M 76 42 C 78 60 72 72 68 76" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <!-- Eyes with longing look -->
-      <circle cx="43" cy="48" r="2.5" fill="#1f2937"/>
-      <circle cx="57" cy="48" r="2.5" fill="#1f2937"/>
-      <path d="M 39 44 Q 43 43 47 45" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <path d="M 53 45 Q 57 43 61 44" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <!-- Smudged dirt mark on cheek (character authenticity) -->
-      <ellipse cx="61" cy="54" rx="2.5" ry="1.5" fill="#78350f" opacity="0.3"/>
-      <!-- Nose & bittersweet smile -->
-      <path d="M 50 48 L 49 53 L 51 53" stroke="#1f2937" stroke-width="1.6" fill="none"/>
-      <path d="M 44 59 Q 50 63 56 60" stroke="#1f2937" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <!-- Ragged Shawl -->
-      <path d="M 22 100 L 32 74 L 68 74 L 78 100 Z" fill="#991b1b" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 36 74 L 50 86 L 64 74 Z" fill="#7f1d1d" stroke="#1f2937" stroke-width="1.8"/>
+      <!-- Messy Hair -->
+      <path d="M 24 45 C 18 18 82 18 76 45 C 80 65 72 85 70 85 C 64 65 66 50 64 45 C 50 30 34 45 32 50 C 28 65 24 85 20 85 Z" fill="#78350f" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Soft Face -->
+      <path d="M 32 42 C 32 66 68 66 68 42 C 68 32 32 32 32 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Big Expressive Eyes -->
+      <circle cx="43" cy="48" r="3" fill="#1e1b4b"/>
+      <circle cx="57" cy="48" r="3" fill="#1e1b4b"/>
+      <path d="M 38 43 Q 43 40 48 43" stroke="#451a03" stroke-width="2" fill="none"/>
+      <path d="M 52 43 Q 57 40 62 43" stroke="#451a03" stroke-width="2" fill="none"/>
+      <path d="M 46 59 Q 50 62 54 59" stroke="#b91c1c" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Ragged Red Scarf & Coat -->
+      <path d="M 22 100 L 32 72 L 68 72 L 78 100 Z" fill="#57534e" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 30 68 C 30 84 70 84 70 68 Z" fill="#b91c1c" stroke="#1f2937" stroke-width="2"/>
     `),
   },
   {
     id: 'fantine',
-    label: 'Fantine (Blonde Hair / Bonnet / Tragic Grace)',
+    label: 'Fantine (Tragic Mother / Golden Locket)',
     category: 'heroine',
-    svgDataUri: makeSvg('#fffbeb', `
-      <!-- Golden Hair -->
-      <path d="M 26 44 C 18 72 24 85 30 88 L 70 88 C 76 85 82 72 74 44 Z" fill="#fbbf24" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Bonnet cap -->
-      <path d="M 28 32 C 28 16 72 16 72 32 C 76 32 76 42 70 42 C 30 42 24 42 28 32 Z" fill="#f8fafc" stroke="#1f2937" stroke-width="2"/>
-      <!-- Face -->
-      <path d="M 32 40 C 32 68 68 68 68 40 C 68 30 32 30 32 40 Z" fill="#ffedd5" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Soft Eyes -->
-      <circle cx="43" cy="48" r="2.5" fill="#1f2937"/>
-      <circle cx="57" cy="48" r="2.5" fill="#1f2937"/>
-      <path d="M 39 43 Q 43 41 47 43" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <path d="M 53 43 Q 57 41 61 43" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <!-- Delicate Nose & Sad Smile -->
-      <path d="M 50 48 L 49 53 L 51 53" stroke="#1f2937" stroke-width="1.5" fill="none"/>
-      <path d="M 45 59 Q 50 63 55 59" stroke="#1f2937" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-      <!-- Blue Dress -->
-      <path d="M 24 100 L 34 74 L 66 74 L 76 100 Z" fill="#60a5fa" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 42 74 Q 50 82 58 74" stroke="#1f2937" stroke-width="2" fill="#ffffff"/>
+    svgDataUri: makeSvg('#fefce8', `
+      <!-- Blonde Hair with Bonnet -->
+      <path d="M 26 42 C 20 18 80 18 74 42 C 78 68 72 80 66 75 C 64 55 66 45 64 42 C 50 30 34 40 32 42 C 28 55 24 75 22 75 Z" fill="#eab308" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- White Bonnet Cap -->
+      <path d="M 24 38 C 24 16 76 16 76 38 Z" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
+      <!-- Delicate Face -->
+      <path d="M 32 42 C 32 66 68 66 68 42 C 68 34 32 34 32 42 Z" fill="#fef08a" opacity="0.3"/>
+      <path d="M 32 42 C 32 66 68 66 68 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <circle cx="43" cy="48" r="2.5" fill="#0284c7"/>
+      <circle cx="57" cy="48" r="2.5" fill="#0284c7"/>
+      <path d="M 46 59 Q 50 61 54 59" stroke="#e11d48" stroke-width="1.8" fill="none"/>
+      <!-- Modest Dress & Locket -->
+      <path d="M 24 100 L 34 70 L 66 70 L 76 100 Z" fill="#0284c7" stroke="#1f2937" stroke-width="2.5"/>
+      <circle cx="50" cy="80" r="3.5" fill="#facc15" stroke="#1f2937" stroke-width="1.5"/>
     `),
   },
   {
     id: 'enjolras',
     label: 'Enjolras (Revolutionary Leader / Red Sash)',
     category: 'rebel',
-    svgDataUri: makeSvg('#fef2f2', `
-      <!-- Golden Apollo Hair -->
-      <path d="M 26 40 C 24 16 76 16 74 40 C 70 24 30 24 26 40 Z" fill="#f59e0b" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Face -->
-      <path d="M 30 42 C 30 68 70 68 70 42 C 70 32 30 32 30 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Resolute Eyes & Brows -->
-      <circle cx="42" cy="49" r="2.5" fill="#1f2937"/>
-      <circle cx="58" cy="49" r="2.5" fill="#1f2937"/>
-      <path d="M 37 44 L 46 45" stroke="#1f2937" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M 63 44 L 54 45" stroke="#1f2937" stroke-width="2.4" stroke-linecap="round"/>
-      <!-- Nose & Determined Mouth -->
-      <path d="M 50 48 L 49 54 L 52 54" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <line x1="44" y1="61" x2="56" y2="61" stroke="#1f2937" stroke-width="2.2" stroke-linecap="round"/>
-      <!-- Red Revolutionary Vest & Sash -->
-      <path d="M 22 100 L 32 72 L 68 72 L 78 100 Z" fill="#dc2626" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 42 72 L 50 82 L 58 72 Z" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
-      <line x1="32" y1="90" x2="68" y2="76" stroke="#b91c1c" stroke-width="6"/>
+    svgDataUri: makeSvg('#fff1f2', `
+      <!-- Golden Wavy Hair -->
+      <path d="M 26 40 C 20 16 80 16 74 40 C 78 50 72 45 68 45 C 50 25 36 45 32 45 Z" fill="#ca8a04" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Resolute Face -->
+      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Fierce Blue Eyes -->
+      <circle cx="42" cy="48" r="2.5" fill="#0284c7"/>
+      <circle cx="58" cy="48" r="2.5" fill="#0284c7"/>
+      <path d="M 38 44 L 46 44" stroke="#713f12" stroke-width="2"/>
+      <path d="M 54 44 L 62 44" stroke="#713f12" stroke-width="2"/>
+      <path d="M 45 60 L 55 60" stroke="#991b1b" stroke-width="2.2"/>
+      <!-- Red Revolutionary Vest -->
+      <path d="M 22 100 L 32 70 L 68 70 L 78 100 Z" fill="#dc2626" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 44 70 L 50 82 L 56 70 Z" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
     `),
   },
   {
     id: 'thenardier',
-    label: 'Thénardier (Scoundrel / Patch / Greasy Hair)',
+    label: 'Thénardier (Innkeeper & Rogue / Eyebrows & Stubble)',
     category: 'scoundrel',
-    svgDataUri: makeSvg('#f5f5f4', `
-      <!-- Greasy Messy Hair -->
-      <path d="M 24 45 C 18 20 82 20 76 45 C 70 28 30 28 24 45 Z" fill="#292524" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Grimy Face -->
-      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#e7e5e4" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Shifty Eyes -->
-      <circle cx="43" cy="48" r="2.5" fill="#1f2937"/>
-      <circle cx="57" cy="48" r="2.5" fill="#1f2937"/>
-      <path d="M 38 43 L 47 45" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
-      <path d="M 62 43 L 53 45" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
-      <!-- Bulbous Nose & Crooked Smirk -->
-      <circle cx="50" cy="52" r="3.5" fill="#d6d3d1" stroke="#1f2937" stroke-width="1.8"/>
-      <path d="M 44 60 Q 52 64 58 58" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- Stubble -->
-      <path d="M 34 54 C 32 70 68 70 66 54" stroke="#78716c" stroke-width="1" stroke-dasharray="2,2" fill="none"/>
-      <!-- Tattered Coat -->
-      <path d="M 20 100 L 30 72 L 70 72 L 80 100 Z" fill="#44403c" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 44 72 L 50 82 L 56 72 Z" fill="#a8a29e" stroke="#1f2937" stroke-width="1.8"/>
+    svgDataUri: makeSvg('#f7fee7', `
+      <!-- Balding dark hair -->
+      <path d="M 24 48 C 22 30 32 24 36 28 C 30 40 30 50 30 56 Z" fill="#292524"/>
+      <path d="M 76 48 C 78 30 68 24 64 28 C 70 40 70 50 70 56 Z" fill="#292524"/>
+      <!-- Cunning Face -->
+      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#fde68a" opacity="0.3"/>
+      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Narrow squinting eyes -->
+      <ellipse cx="42" cy="48" rx="2.5" ry="1.5" fill="#1c1917"/>
+      <ellipse cx="58" cy="48" rx="2.5" ry="1.5" fill="#1c1917"/>
+      <path d="M 37 43 L 47 46" stroke="#1c1917" stroke-width="2.5"/>
+      <path d="M 63 43 L 53 46" stroke="#1c1917" stroke-width="2.5"/>
+      <!-- Smirk & Stubble -->
+      <path d="M 44 60 Q 52 64 58 58" stroke="#1c1917" stroke-width="2" fill="none"/>
+      <circle cx="44" cy="65" r="0.8" fill="#78716c"/>
+      <circle cx="48" cy="66" r="0.8" fill="#78716c"/>
+      <circle cx="52" cy="65" r="0.8" fill="#78716c"/>
+      <!-- Grimy Coat -->
+      <path d="M 22 100 L 32 70 L 68 70 L 78 100 Z" fill="#44403c" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 42 70 L 50 84 L 58 70 Z" fill="#a8a29e"/>
     `),
   },
   {
     id: 'gavroche',
-    label: 'Gavroche (Street Urchin / Cap / Mischief)',
+    label: 'Gavroche (Paris Urchin / Flat Cap)',
     category: 'urchin',
     svgDataUri: makeSvg('#f0fdf4', `
-      <!-- Urchin Baker-boy Cap -->
-      <ellipse cx="50" cy="30" rx="30" ry="14" fill="#a16207" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 30 38 L 70 38 L 76 43 L 24 43 Z" fill="#854d0e" stroke="#1f2937" stroke-width="2"/>
-      <!-- Face -->
-      <path d="M 33 42 C 33 66 67 66 67 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Lively Cheerful Eyes -->
-      <circle cx="43" cy="50" r="2.5" fill="#1f2937"/>
-      <circle cx="57" cy="50" r="2.5" fill="#1f2937"/>
-      <!-- Nose & Big Grin -->
-      <path d="M 50 50 L 49 55 L 51 55" stroke="#1f2937" stroke-width="1.8" fill="none"/>
-      <path d="M 42 60 Q 50 67 58 60 Z" fill="#be123c" stroke="#1f2937" stroke-width="2"/>
+      <!-- Kid Face -->
+      <path d="M 34 46 C 34 68 66 68 66 46 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <circle cx="44" cy="50" r="2.5" fill="#1c1917"/>
+      <circle cx="56" cy="50" r="2.5" fill="#1c1917"/>
+      <path d="M 45 60 Q 50 64 55 60" stroke="#1c1917" stroke-width="2" fill="none"/>
       <!-- Freckles -->
-      <circle cx="40" cy="54" r="1" fill="#b45309"/>
-      <circle cx="42" cy="56" r="1" fill="#b45309"/>
-      <circle cx="58" cy="54" r="1" fill="#b45309"/>
-      <circle cx="60" cy="56" r="1" fill="#b45309"/>
-      <!-- Suspenders & Shirt -->
-      <path d="M 24 100 L 34 74 L 66 74 L 76 100 Z" fill="#67e8f9" stroke="#1f2937" stroke-width="2.5"/>
-      <rect x="38" y="74" width="4" height="26" fill="#78350f"/>
-      <rect x="58" y="74" width="4" height="26" fill="#78350f"/>
+      <circle cx="41" cy="54" r="0.8" fill="#b45309"/>
+      <circle cx="43" cy="56" r="0.8" fill="#b45309"/>
+      <circle cx="57" cy="54" r="0.8" fill="#b45309"/>
+      <circle cx="59" cy="56" r="0.8" fill="#b45309"/>
+      <!-- Oversized Flat Newsboy Cap -->
+      <ellipse cx="50" cy="38" rx="30" ry="10" fill="#78716c" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 24 38 Q 50 16 76 38 Z" fill="#57534e" stroke="#1f2937" stroke-width="2"/>
+      <path d="M 34 38 Q 50 44 66 38 Z" fill="#44403c"/>
+      <!-- Scruffy shirt -->
+      <path d="M 26 100 L 36 72 L 64 72 L 74 100 Z" fill="#0284c7" stroke="#1f2937" stroke-width="2.5"/>
     `),
   },
   {
     id: 'bishop',
-    label: 'Bishop Myriel (Elder Priest / Silver Cross)',
+    label: 'Bishop Myriel (Holy Cleric / Priest Collar)',
     category: 'elder',
-    svgDataUri: makeSvg('#f8fafc', `
-      <!-- White Elder Hair & Skullcap -->
-      <circle cx="50" cy="36" r="18" fill="#e2e8f0" stroke="#1f2937" stroke-width="2"/>
-      <!-- Benevolent Face -->
-      <path d="M 32 42 C 32 68 68 68 68 42 Z" fill="#ffedd5" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Kind Wrinkles & Eyes -->
-      <path d="M 40 48 Q 44 46 48 48" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <path d="M 52 48 Q 56 46 60 48" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <circle cx="44" cy="50" r="2" fill="#1f2937"/>
-      <circle cx="56" cy="50" r="2" fill="#1f2937"/>
-      <!-- Gentle Smile -->
-      <path d="M 44 60 Q 50 64 56 60" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- Cassock & Silver Cross -->
-      <path d="M 22 100 L 32 72 L 68 72 L 78 100 Z" fill="#1e293b" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 46 72 L 50 80 L 54 72 Z" fill="#ffffff" stroke="#1f2937" stroke-width="1.8"/>
-      <!-- Cross -->
-      <line x1="50" y1="84" x2="50" y2="94" stroke="#e2e8f0" stroke-width="2.5"/>
-      <line x1="46" y1="87" x2="54" y2="87" stroke="#e2e8f0" stroke-width="2.5"/>
+    svgDataUri: makeSvg('#f5f3ff', `
+      <!-- Bald & White Hair Fringe -->
+      <path d="M 26 44 C 24 20 76 20 74 44 Z" fill="#f8fafc" stroke="#1f2937" stroke-width="2"/>
+      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- Serene Eyes & Gentle Smile -->
+      <path d="M 40 48 Q 44 45 48 48" stroke="#1e293b" stroke-width="2" fill="none"/>
+      <path d="M 52 48 Q 56 45 60 48" stroke="#1e293b" stroke-width="2" fill="none"/>
+      <path d="M 46 59 Q 50 63 54 59" stroke="#1e293b" stroke-width="2" fill="none"/>
+      <!-- Cassock & White Clerical Collar -->
+      <path d="M 22 100 L 32 68 L 68 68 L 78 100 Z" fill="#0f172a" stroke="#1f2937" stroke-width="2.5"/>
+      <rect x="46" y="68" width="8" height="8" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+      <!-- Silver Cross -->
+      <path d="M 50 82 L 50 94 M 46 86 L 54 86" stroke="#facc15" stroke-width="2.5"/>
     `),
   },
   {
     id: 'student_abc',
-    label: 'ABC Student / Scholar',
+    label: 'Student Rebel (Les Amis de l\'ABC / Beret)',
     category: 'rebel',
-    svgDataUri: makeSvg('#eff6ff', `
-      <!-- Hair -->
-      <path d="M 28 42 C 24 20 76 20 72 42 Z" fill="#475569" stroke="#1f2937" stroke-width="2.5"/>
-      <!-- Spectacles -->
-      <circle cx="42" cy="49" r="6" fill="none" stroke="#1f2937" stroke-width="2"/>
-      <circle cx="58" cy="49" r="6" fill="none" stroke="#1f2937" stroke-width="2"/>
-      <line x1="48" y1="49" x2="52" y2="49" stroke="#1f2937" stroke-width="2"/>
-      <circle cx="42" cy="49" r="2.2" fill="#1f2937"/>
-      <circle cx="58" cy="49" r="2.2" fill="#1f2937"/>
-      <!-- Face -->
-      <path d="M 32 40 C 32 68 68 68 68 40 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
-      <path d="M 45 61 Q 50 65 55 61" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- Vest -->
-      <path d="M 24 100 L 34 74 L 66 74 L 76 100 Z" fill="#0284c7" stroke="#1f2937" stroke-width="2.5"/>
+    svgDataUri: makeSvg('#f0f9ff', `
+      <path d="M 30 44 C 30 68 70 68 70 44 Z" fill="#fed7aa" stroke="#1f2937" stroke-width="2.5"/>
+      <circle cx="43" cy="50" r="2.5" fill="#0f172a"/>
+      <circle cx="57" cy="50" r="2.5" fill="#0f172a"/>
+      <!-- Artist / Rebel Beret -->
+      <ellipse cx="50" cy="36" rx="28" ry="12" fill="#1e293b" stroke="#1f2937" stroke-width="2.5"/>
+      <!-- French Tricolor Cockade Pin -->
+      <circle cx="36" cy="36" r="5" fill="#dc2626"/>
+      <circle cx="36" cy="36" r="3.5" fill="#ffffff"/>
+      <circle cx="36" cy="36" r="2" fill="#2563eb"/>
+      <!-- Open Collar -->
+      <path d="M 24 100 L 34 70 L 66 70 L 76 100 Z" fill="#0f766e" stroke="#1f2937" stroke-width="2.5"/>
+      <path d="M 42 70 L 50 82 L 58 70 Z" fill="#ffffff"/>
     `),
   },
   {
     id: 'dantes',
-    label: 'Edmond Dantès (The Count / Cloak / Piercing Gaze)',
+    label: 'Edmond Dantès / Count of Monte Cristo',
     category: 'protagonist',
     svgDataUri: makeSvg('#0f172a', `
-      <!-- Dark raven hair -->
-      <path d="M 26 42 C 22 18 78 18 74 42 C 70 26 30 26 26 42 Z" fill="#09090b" stroke="#e2e8f0" stroke-width="1.5"/>
-      <!-- Pale resolute face -->
-      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#f8fafc" stroke="#1f2937" stroke-width="2"/>
-      <!-- Piercing Eyes -->
-      <circle cx="42" cy="48" r="2.5" fill="#0284c7"/>
-      <circle cx="58" cy="48" r="2.5" fill="#0284c7"/>
-      <circle cx="42" cy="48" r="1.2" fill="#000000"/>
-      <circle cx="58" cy="48" r="1.2" fill="#000000"/>
-      <!-- Brows & Nose -->
-      <path d="M 37 43 L 46 44" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M 63 43 L 54 44" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M 50 47 L 49 53 L 52 53" stroke="#1f2937" stroke-width="2" fill="none"/>
-      <!-- Subtle enigmatic smile -->
-      <line x1="44" y1="60" x2="56" y2="60" stroke="#1f2937" stroke-width="2"/>
-      <!-- Velvet Cape with Silver Clasp -->
-      <path d="M 20 100 L 30 72 L 70 72 L 80 100 Z" fill="#1e1b4b" stroke="#e2e8f0" stroke-width="2"/>
-      <circle cx="50" cy="76" r="3.5" fill="#e2e8f0" stroke="#1f2937" stroke-width="1.5"/>
+      <!-- Mysterious Dark Hair -->
+      <path d="M 26 44 C 20 15 80 15 74 44 Z" fill="#18181b" stroke="#000000" stroke-width="2.5"/>
+      <path d="M 30 42 C 30 68 70 68 70 42 Z" fill="#fed7aa" stroke="#000000" stroke-width="2.5"/>
+      <!-- Piercing Silver Eyes -->
+      <circle cx="42" cy="48" r="2.5" fill="#38bdf8"/>
+      <circle cx="58" cy="48" r="2.5" fill="#38bdf8"/>
+      <!-- Noble Mask / Cape -->
+      <path d="M 20 100 L 30 68 L 70 68 L 80 100 Z" fill="#172554" stroke="#000000" stroke-width="2.5"/>
+      <path d="M 40 68 L 50 80 L 60 68 Z" fill="#ffffff"/>
+      <circle cx="50" cy="74" r="3" fill="#dc2626"/>
     `),
   },
 ];
 
-// Helper to generate dynamic SVG avatar based on character initials and theme color
-export function generateInitialsAvatar(name: string, tier: string = 'supporting', role: string = ''): string {
-  const words = name.trim().split(/\s+/);
-  const initials = words.length > 1
-    ? (words[0][0] + words[words.length - 1][0]).toUpperCase()
-    : name.slice(0, 2).toUpperCase();
+// Helper to generate initials avatar if no photo or preset is selected
+export function generateInitialsAvatar(name: string, tier: string, archetype?: string): string {
+  const clean = name.trim();
+  const parts = clean.split(/\s+/);
+  let initials = '';
+  if (parts.length === 1) {
+    initials = clean.slice(0, 2).toUpperCase();
+  } else {
+    initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
 
+  // Tier color mapping
   const tierColors: Record<string, { bg: string; text: string; ring: string }> = {
-    lead: { bg: '#8b5cf6', text: '#ffffff', ring: '#c4b5fd' },
-    supporting: { bg: '#0ea5e9', text: '#ffffff', ring: '#7dd3fc' },
+    lead: { bg: '#8b5cf6', text: '#ffffff', ring: '#a78bfa' },
+    supporting: { bg: '#0ea5e9', text: '#ffffff', ring: '#38bdf8' },
     minor: { bg: '#64748b', text: '#f8fafc', ring: '#cbd5e1' },
   };
 
@@ -350,11 +315,93 @@ export function generateInitialsAvatar(name: string, tier: string = 'supporting'
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+export interface ColorCirclePreset {
+  id: string;
+  category: string;
+  label: string;
+  color: string;
+  ringColor: string;
+}
+
+export const COLOR_CIRCLE_PRESETS: ColorCirclePreset[] = [
+  {
+    id: 'color_ally',
+    category: 'ally',
+    label: 'Ally / Friend',
+    color: '#84cc16', // lime-500
+    ringColor: '#65a30d',
+  },
+  {
+    id: 'color_authority',
+    category: 'authority',
+    label: 'Authority / Power',
+    color: '#f97316', // orange-500
+    ringColor: '#ea580c',
+  },
+  {
+    id: 'color_family',
+    category: 'family',
+    label: 'Family',
+    color: '#0ea5e9', // sky-500
+    ringColor: '#0284c7',
+  },
+  {
+    id: 'color_other',
+    category: 'other',
+    label: 'Other',
+    color: '#64748b', // slate-500
+    ringColor: '#475569',
+  },
+  {
+    id: 'color_rival',
+    category: 'rival',
+    label: 'Rival / Enemy',
+    color: '#ef4444', // red-500
+    ringColor: '#dc2626',
+  },
+  {
+    id: 'color_romantic',
+    category: 'romantic',
+    label: 'Romantic',
+    color: '#a855f7', // purple-500
+    ringColor: '#9333ea',
+  },
+];
+
+export function getInitials(name?: string): string {
+  if (!name || !name.trim()) return '';
+  const clean = name.trim();
+  const parts = clean.split(/\s+/);
+  if (parts.length === 1) {
+    return clean.slice(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function generateColorCircleSvg(color: string, ringColor: string, initials: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <circle cx="50" cy="50" r="48" fill="${color}" stroke="${ringColor}" stroke-width="4"/>
+    ${initials ? `<text x="50" y="59" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="1">${initials}</text>` : ''}
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 // Get appropriate avatar for a character
 export function getCharacterAvatar(character: { avatarUrl?: string; avatarPreset?: string; displayName: string; fullName: string; tier: string; archetypeTag?: string }): string {
   if (character.avatarUrl && character.avatarUrl.trim().length > 0) {
     return character.avatarUrl;
   }
+
+  // 1. Check for color circle presets matching relationship types
+  if (character.avatarPreset && character.avatarPreset.startsWith('color_')) {
+    const colorPreset = COLOR_CIRCLE_PRESETS.find(p => p.id === character.avatarPreset);
+    if (colorPreset) {
+      const initials = getInitials(character.displayName || character.fullName);
+      return generateColorCircleSvg(colorPreset.color, colorPreset.ringColor, initials);
+    }
+  }
+
+  // 2. Check for vector avatar presets
   if (character.avatarPreset) {
     const preset = AVATAR_PRESETS.find(p => p.id === character.avatarPreset);
     if (preset) return preset.svgDataUri;
